@@ -12,11 +12,21 @@
 #
 
 function conda_auto_env() {
+  # check if current directory has a git root
+  gitdir=$(git rev-parse --show-toplevel 2> /dev/null)
+  # set ENV to wherever the conda-env.yml is: either in the current dir, or
+  # the git root dir.
   if [ -e "conda-env.yml" ]; then
     ENV=$(head -n 1 conda-env.yml | cut -f2 -d ' ')
+  elif [ -e "$gitdir/conda-env.yml" ]; then
+    ENV=$(head -n 1 $gitdir/conda-env.yml | cut -f2 -d ' ')
+  else
+    ENV=""
+  fi
+
+  if [ -n "$ENV" ]; then
     # Check if you are already in the environment
     if [[ $PATH != *$ENV* ]]; then
-      # Check if the environment exists
       source activate $ENV
     fi
   else
