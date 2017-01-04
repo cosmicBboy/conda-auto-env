@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # conda-auto-env automatically activates a conda environment when
-# entering a folder with an conda-env.yml file.
+# entering a folder with an .conda-env file.
 
 # This function does a few things:
 # 
@@ -12,27 +12,27 @@
 #
 
 BASE_ENV="root" # keeps track of conda environment outside of a directory
-                # containing conda-env.yml
+                # containing .conda-env
 IN_CONDA_DIR=0  # keeps track of whether the user just visited a directory or
-                # git repo containing conda-env.yml
+                # git repo containing .conda-env
 
 function conda_auto_env() {
 
-  GIT_DIR=$(git rev-parse --show-toplevel 2> /dev/null)
-  # get ENV: if conda-env.yml is in the current directory or in the root 
+  _CONDA_GIT_DIR=$(git rev-parse --show-toplevel 2> /dev/null)
+  # get ENV: if .conda-env is in the current directory or in the root 
   # directory of a git repo, then ENV is set to the name of the conda env in
-  # conda-env.yml. If not, then ENV == "" and the BASE_ENV is modified only
-  # if the previous directory did not contain a conda-env.yml file.
-  if [ -e "conda-env.yml" ]; then
-    ENV=$(head -n 1 conda-env.yml | cut -f2 -d ' ')
+  # .conda-env. If not, then ENV == "" and the BASE_ENV is modified only
+  # if the previous directory did not contain a .conda-env file.
+  if [ -e ".conda-env" ]; then
+    ENV=$(head -n 1 .conda-env | cut -f2 -d ' ')
     IN_CONDA_DIR=1
-  elif [ -e "$GIT_DIR/conda-env.yml" ]; then
-    ENV=$(head -n 1 $GIT_DIR/conda-env.yml | cut -f2 -d ' ')
+  elif [ -e "$_CONDA_GIT_DIR/.conda-env" ]; then
+    ENV=$(head -n 1 $_CONDA_GIT_DIR/.conda-env | cut -f2 -d ' ')
     IN_CONDA_DIR=1
   else
     ENV=""
     # set base env to current env if user was just in a directory that didn't
-    # contain a conda-env.yml file.
+    # contain a .conda-env file.
     if [ "$IN_CONDA_DIR" -eq "0" ]; then
       BASE_ENV=$(conda info --envs | grep "*" | awk '{print $1}')
     fi
@@ -52,4 +52,4 @@ function conda_auto_env() {
   fi
 }
 
-export PROMPT_COMMAND=conda_auto_env
+export PROMPT_COMMAND="$PROMPT_COMMAND conda_auto_env"
